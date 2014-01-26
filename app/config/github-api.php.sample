@@ -1,0 +1,6 @@
+<?php
+
+return array(
+    'key'       => 'your-key-here',
+    'secret'    => 'your-secret-here',
+);

@@ -1,0 +1,46 @@
+body {
+    background-color: #2F4F4F;
+    padding-top: 70px;
+}
+body.login {
+    padding-top: 0;
+}
+body.login .container {
+    background-color: #2F4F4F;
+}
+body.login h1 {
+    color: #fff;
+    font-size: 400%;
+    margin-top: 200px;
+}
+body.login h2 {
+    color: #888;
+    margin-bottom: 30px;
+}
+body>.container {
+    background-color: #fff;
+}
+.btn-primary a {
+    color: #fff;
+}
+.up {
+    color: red;
+}
+.down {
+    color: green;
+}
+
+.nobreak {
+    white-space: nowrap;
+}
+
+.break-word {
+    word-wrap:break-word;
+}
+
+.table .fa {
+    font-size: 125%;
+}
+.smaller-font {
+    font-size: 75%;
+}
