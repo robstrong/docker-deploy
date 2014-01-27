@@ -16,7 +16,7 @@ class ImageBuilder
         $this->setAddress($repoAddr);
         $this->setBranch($branch);
         $this->setToken($token);
-        $this->setCachePath(storage_path());
+        $this->setCachePath(storage_path() . '/repos');
         if (empty($docker)) {
             $docker = new \Strong\Phocker\Docker;
         }

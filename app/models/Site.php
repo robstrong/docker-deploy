@@ -66,6 +66,9 @@ class Site extends Eloquent
             ->setSshConnection($ssh)
             ->setupRepository();
 
+        //set host in redis
+        Redis::connection()->set($this->url, $ip);
+
         return $container->Id;
     }
 }
