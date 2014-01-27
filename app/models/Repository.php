@@ -11,12 +11,12 @@ class Repository extends Eloquent
 
     public function user()
     {
-        return $this->belongsTo('User');
+        return $this->belongsTo('User', 'auth_user_id');
     }
 
     public function token()
     {
-        return $this->user()->getGithubToken();
+        return $this->user->getGithubToken();
     }
 }
 

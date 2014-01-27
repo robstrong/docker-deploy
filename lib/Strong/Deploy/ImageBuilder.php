@@ -11,38 +11,51 @@ class ImageBuilder
     protected $branch;
     protected $token;
 
-    public function __construct($repoAddr, $branch, $token)
+    public function __construct($repoAddr, $branch, $token, Phocker\Docker $docker = null)
     {
         $this->setAddress($repoAddr);
         $this->setBranch($branch);
-        $this->setGithubToken($token);
+        $this->setToken($token);
+        $this->setCachePath(storage_path());
+        if (empty($docker)) {
+            $docker = new \Strong\Phocker\Docker;
+        }
+        $this->setDocker($docker);
     }
 
-    protected function cloneRepository(
+    protected function cloneRepository()
     {
         if (!$this->repoExists()) {
-            $this->runCommand('git clone https://' . $this->getToken() . ':x-oauth-basic@' . $this->getAddress());
+            $this->runCommand(
+                'git clone https://' . $this->getToken() . ':x-oauth-basic@' . $this->getAddress() .
+                ' ' . $this->getRepoPath()
+            );
         }
 
         //checkout correct branch
-        $this->runCommand('git fetch');
-        $this->runCommand('git checkout -f ' . $this->getBranch());
-        $this->runCommand('git reset --hard origin/' . $this->getBranch());
-
+        $this->runCommand('git fetch', $this->getRepoPath());
+        $this->runCommand('git checkout -f ' . $this->getBranch(), $this->getRepoPath());
+        $this->runCommand('git reset --hard origin/' . $this->getBranch(), $this->getRepoPath());
     }
 
-    protected function runCommand($cmd)
+    public function getRepoPath()
     {
-        $process = new Process($cmd);
+        return $this->getCachePath() . $this->getAddress() . '/';
+    }
+
+    protected function runCommand($cmd, $cwd = null)
+    {
+        $process = new Process($cmd, $cwd);
         $process->run();
         if (!$process->isSuccessful()) {
             throw new \RuntimeException('Error, command: ' . $cmd . "\nProduced Error: " . $process->getErrorOutput());
         }
+        return $process->getOutput();
     }
 
     public function repoExists()
     {
-        if (is_dir($this->getCachePath() . $this->getAddress())) {
+        if (is_dir($this->getRepoPath())) {
             return true;
         }
         return false;
@@ -86,16 +99,32 @@ class ImageBuilder
         return $this;
     }
 
-
     public function getToken()
     {
         return $this->token;
     }
 
+    public function getDocker()
+    {
+        return $this->docker;
+    }
+
+    public function setDocker(\Strong\Phocker\Docker $docker)
+    {
+        $this->docker = $docker;
+        return $this;
+    }
+
     public function build()
     {
         $this->cloneRepository();
-        
 
+        //package the dockerfile into a tar
+        $tar = $this->runCommand('tar c .', $this->getRepoPath() . 'build/');
+        $nameHash = md5($tar);
+        if (!$this->getDocker()->containerExists($nameHash)) {
+            $this->getDocker()->build($tar, $nameHash);
+        }
+        return $nameHash;
     }
 }

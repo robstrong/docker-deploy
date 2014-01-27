@@ -12,10 +12,10 @@ class Site extends Eloquent
 
         Site::created(function($site) {
             //queue image build
-            Queue:push(
+            Queue::push(
                 'Strong\Deploy\Queue\BuildImage', 
                 array(
-                    'site_id'           => $this->id,
+                    'site_id'           => $site->id,
                     'start_container'   => true
                 )
             );
@@ -29,13 +29,20 @@ class Site extends Eloquent
 
     public function buildImage()
     {
-        $repo = $this->repository();
+        $repo = $this->repository;
         $builder = new ImageBuilder(
             'github.com/' . $repo->owner . '/' . $repo->name . '.git',
-            $site->branch,
+            $this->branch,
             $repo->token()
         );
-        $builder->build();
+        $tag = $builder->build();
+        $this->tag = $tag;
+        $this->save();
     }
 
+    public function startContainer()
+    {
+        $docker = new \Strong\Phocker\Docker;
+        $docker->createContainer($this->tag);
+    }
 }

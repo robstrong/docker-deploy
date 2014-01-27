@@ -11,5 +11,7 @@ class BuildImage
         if (!empty($data['start_container'])) {
             $site->startContainer();
         }
+
+        $job->delete();
     }
 }

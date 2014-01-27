@@ -19,7 +19,7 @@
 			"app/database/seeds",
 			"app/tests/TestCase.php"
 		],
-        "psr-4": {"Strong\\": "lib"}
+        "psr-4": {"": "lib"}
 	},
 	"scripts": {
 		"post-install-cmd": [
