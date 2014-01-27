@@ -122,7 +122,7 @@ class ImageBuilder
         //package the dockerfile into a tar
         $tar = $this->runCommand('tar c .', $this->getRepoPath() . 'build/');
         $nameHash = md5($tar);
-        if (!$this->getDocker()->containerExists($nameHash)) {
+        if (!$this->getDocker()->imageExists($nameHash)) {
             $this->getDocker()->build($tar, $nameHash);
         }
         return $nameHash;

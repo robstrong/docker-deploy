@@ -13,7 +13,7 @@ class Site extends Eloquent
         Site::created(function($site) {
             //queue image build
             Queue::push(
-                'Strong\Deploy\Queue\BuildImage', 
+                'Strong\Deploy\Queue\CreateInstance', 
                 array(
                     'site_id'           => $site->id,
                     'start_container'   => true
@@ -43,6 +43,29 @@ class Site extends Eloquent
     public function startContainer()
     {
         $docker = new \Strong\Phocker\Docker;
-        $docker->createContainer($this->tag);
+        $container = $docker->createContainer($this->tag);
+        $docker->startContainer($container->Id);
+        sleep(2); //wait a second for the container to start
+
+        //clone repo into container
+        $containerInfo = $docker->inspectContainer($container->Id);
+        $ip = $containerInfo->NetworkSettings->IPAddress;
+        $ssh = new \Strong\Ssh(
+            array(
+                'host'      => $ip,
+                'user'      => 'root',
+                'password'  => 'pica9'
+            )
+        );
+        
+        $git = new \Strong\SourceControl;
+        $git->setRepository('git@github.com:' . $this->repository->owner . '/' . $this->repository->name . '.git')
+            ->setCommit($this->branch)
+            ->setClonePath('/var/www')
+            ->setGithubToken($this->repository->token())
+            ->setSshConnection($ssh)
+            ->setupRepository();
+
+        return $container->Id;
     }
 }

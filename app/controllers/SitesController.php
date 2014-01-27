@@ -75,4 +75,12 @@ class SitesController extends \BaseController
         Session::flash('success', 'Site successfully created');
         return Redirect::action('SitesController@index');
     }
+
+    public function startInstance($id)
+    {
+        $site = Site::findOrFail($id);
+        $site->startContainer();
+        Session::flash('success', 'Started Container');
+        return Redirect::action('SitesController@index');
+    }
 }

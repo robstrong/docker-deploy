@@ -39,6 +39,16 @@ class Docker
         if ($resp->getStatusCode() != 201) {
             throw new \Exception('(' . $resp->getStatusCode() . ') ' . $resp->getBody());
         }
+        return json_decode($resp->getBody());
+    }
+
+    public function startContainer($id)
+    {
+        $config = array(
+            "PublishAllPorts"   => false,
+            "Privileged"        => false,
+        );
+        $resp = $this->getClient()->post('/containers/' . $id . '/start', json_encode($config), array('Content-Type' => 'application/json'));
     }
 
     public function setClient(Client $client)
@@ -52,7 +62,7 @@ class Docker
         return $this->client;
     }
 
-    public function containerExists($name)
+    public function imageExists($name)
     {
         try {
             $resp = $this->getClient()->get('/images/' . $name . '/json');
@@ -60,6 +70,12 @@ class Docker
             return false;
         }
         return true;
+    }
+
+    public function inspectContainer($id)
+    {
+        $resp = $this->getClient()->get('/containers/' . $id . '/json');
+        return json_decode($resp->getBody());
     }
 
 }

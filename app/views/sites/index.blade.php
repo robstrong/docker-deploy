@@ -25,6 +25,7 @@ Sites
                             <th>Branch</th>
                             <th>Created</th>
                             <th>Updated</th>
+                            <th>Start Instances</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -35,6 +36,7 @@ Sites
                             <td>{{{ $site->branch }}}</td>
                             <td>{{ $site->created_at }}</td>
                             <td>{{ $site->updated_at }}</td>
+                            <td><a href="{{ URL::action('SitesController@startInstance', array('id' => $site->id)) }}"><i class="fa fa-bolt"></i></a></td>
                         </tr>
                         @endforeach
                     </tbody>
