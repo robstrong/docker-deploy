@@ -26,6 +26,7 @@
                         <li class="{{ Request::segment(1) == '' || Request::segment(1) == 'sites'? 'active' : '' }}"><a href="/sites">Sites</a></li>
                         <li class="{{ Request::segment(1) == 'images' ? 'active' : '' }}"><a href="/builds">Images</a></li>
                         <li class="{{ Request::segment(1) == 'instances' ? 'active' : '' }}"><a href="/repositories">Instances</a></li>
+                        <li class="{{ Request::segment(1) == 'domains' ? 'active' : '' }}"><a href="/domains">Domains</a></li>
                         <li class="{{ Request::segment(1) == 'users' ? 'active' : '' }}"><a href="/users">Users</a></li>
                     </ul>
                  <ul class="nav navbar-nav navbar-right">

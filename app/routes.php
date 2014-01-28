@@ -14,8 +14,9 @@
 Route::group(array('before' => 'auth'), 
     function() {
         Route::get('/', array('as' => 'home', 'uses' => 'SitesController@index'));
-        Route::resource('sites', 'SitesController');
         Route::get('/sites/{id}/start-instance', 'SitesController@startInstance');
+        Route::resource('sites', 'SitesController');
+        Route::resource('domains', 'DomainsController');
     }
 );
 

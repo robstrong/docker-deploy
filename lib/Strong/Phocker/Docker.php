@@ -42,6 +42,16 @@ class Docker
         return json_decode($resp->getBody());
     }
 
+    public function kill($containerId)
+    {
+        $this->getClient()->post('/containers/' . $containerId . '/kill');
+    }
+
+    public function delete($containerId)
+    {
+        $this->getClient()->delete('/containers/' . $containerId);
+    }
+
     public function startContainer($id)
     {
         $config = array(

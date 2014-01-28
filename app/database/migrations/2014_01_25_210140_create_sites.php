@@ -13,7 +13,7 @@ class CreateSites extends Migration {
 	{
         Schema::create('sites', function($table) {
             $table->increments('id');
-            $table->string('url', 128);
+            $table->string('subdomain', 128);
             $table->string('branch', 128);
             $table->integer('repository_id')->unsigned()->nullable();
             $table->foreign('repository_id')->references('id')->on('repositories');

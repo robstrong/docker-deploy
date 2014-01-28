@@ -31,7 +31,7 @@ Sites
                     <tbody>
                         @foreach ($sites as $site)
                         <tr>
-                            <td><a href="/sites/{{ $site->id }}">{{{ $site->url }}}</a></td>
+                            <td><a href="/sites/{{ $site->id }}">{{{ $site->getFullUrl() }}}</a></td>
                             <td>{{{ $site->repository->owner }}}/{{{ $site->repository->name }}}</td>
                             <td>{{{ $site->branch }}}</td>
                             <td>{{ $site->created_at }}</td>

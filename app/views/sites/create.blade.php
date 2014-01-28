@@ -11,17 +11,17 @@ Add Site
                 <div class="col-md-6">
                     {{ Form::open(array('action' => 'SitesController@store')) }}
                         {{ Form::label('URL') }}<br>
-                            <div class="input-group">
-                                {{ Form::text('url', '', array('class' => 'form-control')) }}
-                                <span class="input-group-addon">.zunction.com</span>
-                            </div>
+                        <div class="input-group">
+                            {{ Form::text('subdomain', '', array('class' => 'form-control')) }}
+                            <span class="input-group-addon"> . {{ Form::select('domain_id', $domainDropdown) }}</span>
+                        </div>
                         {{ Form::label('Repository') }}<br>
                         {{ Form::select('repository', $repoDropdown) }}
                         <br>
                         {{ Form::label('Branch') }}<br>
-                            <select name="branch">
-                                <option value="master">master</option>
-                            </select>
+                        <select name="branch">
+                            <option value="master">master</option>
+                        </select>
                         <br>
                         <br>
                         <button type="submit" class="btn btn-primary">Add</button>

@@ -7,7 +7,7 @@ class SitesController extends \BaseController
         return View::make(
             'sites.index',
             array(
-                'sites' => Site::with('repository')->orderBy('url')->get()
+                'sites' => Site::with('repository', 'domain')->orderBy('subdomain')->get()
             )
         );
     }
@@ -30,10 +30,17 @@ class SitesController extends \BaseController
             }
         }
 
+        $domains = Domain::orderBy('domain')->get();
+        $domainDropdown = array();
+        foreach ($domains as $domain) {
+            $domainDropdown[$domain->id] = $domain->domain;
+        }
+
         return View::make(
             'sites.create',
             array(
-                'repoDropdown'  => $repoDropdown,
+                'repoDropdown'      => $repoDropdown,
+                'domainDropdown'    => $domainDropdown,
             )
         );
     }
@@ -41,9 +48,10 @@ class SitesController extends \BaseController
     public function store()
     {
         $rules = array(
-            'url'           => 'required',
+            'subdomain'     => 'alpha_dash',
+            'domain_id'     => 'required|integer|exists:domains,id',
             'repository'    => 'required',
-            'branch'        => 'required',
+            'branch'        => 'required|alpha_dash',
         );
 
         $validator = Validator::make(Input::all(), $rules);
@@ -68,11 +76,31 @@ class SitesController extends \BaseController
         
         $site = new Site;
         $site->repository_id = $repoModel->id;
-        $site->url = Input::get('url');
+        $site->domain_id = Input::get('domain_id');
+        $site->subdomain = Input::get('subdomain');
         $site->branch = Input::get('branch');
         $site->save();
 
         Session::flash('success', 'Site successfully created');
+        return Redirect::action('SitesController@index');
+    }
+
+    public function show($id)
+    {
+        $site = Site::findOrFail($id);
+        return View::make(
+            'sites.show',
+            array(
+                'site' => $site
+            )
+        );
+    }
+
+    public function destroy($id)
+    {
+        $site = Site::findOrFail($id);
+        $site->delete();
+        Session::flash('success', 'Site successfully deleted');
         return Redirect::action('SitesController@index');
     }
 

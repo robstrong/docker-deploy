@@ -20,11 +20,26 @@ class Site extends Eloquent
                 )
             );
         });
+
+        Site::deleting(function($site) {
+            $site->clearProxyEntry();
+            $site->destroyContainers();
+        });
     }
 
     public function repository()
     {
         return $this->belongsTo('Repository');
+    }
+
+    public function domain()
+    {
+        return $this->belongsTo('Domain');
+    }
+
+    public function containers()
+    {
+        return $this->hasMany('Container');
     }
 
     public function buildImage()
@@ -49,6 +64,9 @@ class Site extends Eloquent
 
         //clone repo into container
         $containerInfo = $docker->inspectContainer($container->Id);
+        $containerModel = new Container();
+        $containerModel->docker_id = $container->Id;
+        $this->containers()->save($containerModel);
         $ip = $containerInfo->NetworkSettings->IPAddress;
         $ssh = new \Strong\Ssh(
             array(
@@ -66,9 +84,37 @@ class Site extends Eloquent
             ->setSshConnection($ssh)
             ->setupRepository();
 
-        //set host in redis
-        Redis::connection()->set($this->url, $ip);
+        $this->addProxyEntry($ip);
 
         return $container->Id;
+    }
+
+    public function getFullUrl()
+    {
+        $url = '';
+        if (!empty($this->subdomain)) {
+            $url = trim($this->subdomain, '.') . '.';
+        }
+        $url .= $this->domain->domain;
+
+        return $url;
+    }
+
+    public function addProxyEntry($ip)
+    {
+        Redis::connection()->set($this->getFullUrl(), $ip);
+
+    }
+
+    public function clearProxyEntry()
+    {
+        Redis::connection()->del($this->getFullUrl());
+    }
+
+    public function destroyContainers()
+    {
+        foreach ($this->containers as $container) {
+            $container->delete();
+        }
     }
 }

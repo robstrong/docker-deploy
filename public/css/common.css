@@ -44,3 +44,6 @@ body>.container {
 .smaller-font {
     font-size: 75%;
 }
+.display-inline {
+    display:inline;
+}
