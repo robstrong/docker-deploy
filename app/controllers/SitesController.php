@@ -16,18 +16,9 @@ class SitesController extends \BaseController
     {
         $github = App::make('github');
 
-        $repoDropdown = array('User Repositories' => array());
-        $userRepos = $github->api('current_user')->repositories();
-        foreach ($userRepos as $repo) {
-            $repoDropdown['User Repositories'][$repo['owner']['login'] . '/' . $repo['name']] = $repo['owner']['login'] . '/' . $repo['name'];
-        }
-
-        $orgs = $github->api('current_user')->organizations();
-        foreach ($orgs as &$org) {
-            $repos = $github->api('organization')->repositories($org['login']);
-            foreach ($repos as $repo) {
-                $repoDropdown[$org['login']][$repo['owner']['login'] . '/' . $repo['name']] = $repo['owner']['login'] . '/' . $repo['name'];
-            }
+        $repoDropdown = array();
+        foreach (Repository::all() as $repo) {
+            $repoDropdown[$repo->owner . '/' . $repo->name] = $repo->owner . '/' . $repo->name;
         }
 
         $domains = Domain::orderBy('domain')->get();
