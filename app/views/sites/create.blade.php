@@ -10,13 +10,12 @@ Add Site
             <div class="row">
                 <div class="col-md-6">
                     {{ Form::open(array('action' => 'SitesController@store')) }}
-                        {{ Form::label('URL') }}<br>
-                        <div class="input-group">
-                            {{ Form::text('subdomain', '', array('class' => 'form-control')) }}
-                            <span class="input-group-addon"> . {{ Form::select('domain_id', $domainDropdown) }}</span>
-                        </div>
+                        {{ Form::label('Domain') }}<br>
+                        {{ Form::select('domain_id', $domainDropdown) }}<br><br>
+                        {{ Form::label('Subdomain') }}<br>
+                        {{ Form::text('subdomain', '', array('class' => 'form-control')) }}<br>
                         {{ Form::label('Repository') }}<br>
-                        {{ Form::select('repository', $repoDropdown) }}
+                        {{ Form::select('repository', $repoDropdown) }}<br>
                         <br>
                         {{ Form::label('Branch') }}<br>
                         <select name="branch">

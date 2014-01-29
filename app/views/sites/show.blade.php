@@ -25,7 +25,7 @@ Site - {{ $site->getFullUrl() }}
     <div class="panel-body">
         <dl>
             <dt>URL</dt>
-            <dd>{{ $site->getFullUrl() }}</dd>
+            <dd><a href="http://{{ $site->getFullUrl() }}" target="_blank">{{ $site->getFullUrl() }}</a></dd>
             <dt>Repostory</dt>
             <dd>{{{ $site->repository->owner }}}/{{{ $site->repository->name }}}</dd>
             <dt>Branch</dt>

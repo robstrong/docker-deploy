@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Deploy - @yield('title')</title>
+        <title>Zunction - @yield('title')</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="/css/common.css">
@@ -19,14 +19,14 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="/">Deploy</a>
+                    <a class="navbar-brand" href="/">Zunction</a>
                 </div>
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
                         <li class="{{ Request::segment(1) == '' || Request::segment(1) == 'sites'? 'active' : '' }}"><a href="/sites">Sites</a></li>
+                        <li class="{{ Request::segment(1) == 'domains' ? 'active' : '' }}"><a href="/domains">Domains</a></li>
                         <li class="{{ Request::segment(1) == 'images' ? 'active' : '' }}"><a href="/builds">Images</a></li>
                         <li class="{{ Request::segment(1) == 'instances' ? 'active' : '' }}"><a href="/repositories">Instances</a></li>
-                        <li class="{{ Request::segment(1) == 'domains' ? 'active' : '' }}"><a href="/domains">Domains</a></li>
                         <li class="{{ Request::segment(1) == 'users' ? 'active' : '' }}"><a href="/users">Users</a></li>
                     </ul>
                  <ul class="nav navbar-nav navbar-right">

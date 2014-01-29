@@ -8,7 +8,7 @@ class Container extends Eloquent
     {
         parent::boot();
 
-        Site::deleting(function($container) {
+        Container::deleting(function($container) {
             $docker = new \Strong\Phocker\Docker;
             $docker->kill($container->docker_id);
             $docker->deleteContainer($container->docker_id);

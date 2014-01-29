@@ -50,7 +50,7 @@ class Client
         return $this;
     }
 
-    public function post($endpoint, $body, $headers = array())
+    public function post($endpoint, $body = '', $headers = array())
     {
         $req = $this->getHttpClient()->post($endpoint, $headers, $body);
         return $req->send();

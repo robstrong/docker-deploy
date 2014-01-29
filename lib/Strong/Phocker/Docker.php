@@ -24,7 +24,7 @@ class Docker
         }
 
         $resp = $this->getClient()->post('/build?' . http_build_query($queryParams), $tar);
-        if ($resp->getStatusCode() != 200) {
+        if ($resp->getStatusCode() != 200 || strpos((string)$resp->getBody(), 'Successfully built') === FALSE) {
             throw new \Exception('(' . $resp->getStatusCode() . ') ' . $resp->getBody());
         }
     }
@@ -44,12 +44,18 @@ class Docker
 
     public function kill($containerId)
     {
-        $this->getClient()->post('/containers/' . $containerId . '/kill');
+        $resp = $this->getClient()->post('/containers/' . $containerId . '/kill');
+        if ($resp->getStatusCode() != 204) {
+            throw new \Exception('(' . $resp->getStatusCode() . ') ' . $resp->getBody());
+        }
     }
 
-    public function delete($containerId)
+    public function deleteContainer($containerId)
     {
-        $this->getClient()->delete('/containers/' . $containerId);
+        $resp = $this->getClient()->delete('/containers/' . $containerId);
+        if ($resp->getStatusCode() != 204) {
+            throw new \Exception('(' . $resp->getStatusCode() . ') ' . $resp->getBody());
+        }
     }
 
     public function startContainer($id)

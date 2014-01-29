@@ -75,7 +75,15 @@ class Site extends Eloquent
                 'password'  => 'pica9'
             )
         );
+        $this->installRepo($ssh);
         
+        $this->addProxyEntry($ip);
+
+        return $container->Id;
+    }
+
+    protected function installRepo($ssh)
+    {
         $git = new \Strong\SourceControl;
         $git->setRepository('git@github.com:' . $this->repository->owner . '/' . $this->repository->name . '.git')
             ->setCommit($this->branch)
@@ -84,9 +92,12 @@ class Site extends Eloquent
             ->setSshConnection($ssh)
             ->setupRepository();
 
-        $this->addProxyEntry($ip);
+        $this->installComposer($ssh);
+    }
 
-        return $container->Id;
+    protected function installComposer($ssh)
+    {
+        //if composer.json exists, run composer install
     }
 
     public function getFullUrl()
