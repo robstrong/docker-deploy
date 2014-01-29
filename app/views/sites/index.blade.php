@@ -25,7 +25,7 @@ Sites
                             <th>Branch</th>
                             <th>Created</th>
                             <th>Updated</th>
-                            <th>Start Instances</th>
+                            <th colspan="4"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,9 +34,34 @@ Sites
                             <td><a href="/sites/{{ $site->id }}">{{{ $site->getFullUrl() }}}</a></td>
                             <td>{{{ $site->repository->owner }}}/{{{ $site->repository->name }}}</td>
                             <td>{{{ $site->branch }}}</td>
-                            <td>{{ $site->created_at }}</td>
-                            <td>{{ $site->updated_at }}</td>
-                            <td><a href="{{ URL::action('SitesController@startInstance', array('id' => $site->id)) }}"><i class="fa fa-bolt"></i></a></td>
+                            <td>
+                                {{{ $site->created_at->toFormattedDateString() }}} 
+                                <br>
+                                {{{ $site->created_at->toTimeString() }}}
+                            </td>
+                            <td>
+                                {{{ $site->updated_at->toFormattedDateString() }}} 
+                                <br>
+                                {{{ $site->updated_at->toTimeString() }}}
+                            </td>
+                            <td>
+                                <a href="http://{{ $site->getFullUrl() }}" target="_blank" class="btn btn-primary">Open Site</a>
+                                <a title="Edit" class="btn btn-primary" href="{{ URL::action('SitesController@show', array('id' => $site->id)) }}">
+                                    Edit
+                                </a>
+                                <a title="Rebuild Instance" class="btn btn-primary" href="{{ URL::action('SitesController@startInstance', array('id' => $site->id)) }}">
+                                    Rebuild
+                                </a>
+                                {{ Form::open(
+                                    array(
+                                        'action' => array('SitesController@destroy', 'id' => $site->id),
+                                        'class'  => 'display-inline',
+                                        'method' => 'delete',
+                                    )
+                                ) }}
+                                {{ Form::submit('Delete', array('class' => 'btn btn-danger')) }}
+                                {{ Form::close() }}
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>

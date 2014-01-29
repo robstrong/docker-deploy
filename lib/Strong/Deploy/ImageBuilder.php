@@ -3,6 +3,7 @@
 namespace Strong\Deploy;
 
 use Symfony\Component\Process\Process;
+use Symfony\Component\Yaml\Yaml;
 
 class ImageBuilder
 {
@@ -10,6 +11,10 @@ class ImageBuilder
     protected $repoAddr;
     protected $branch;
     protected $token;
+    protected $defaultConfig = array(
+        'clone_path'        => '/var/www',
+        'post_clone_cmd'    => array(),
+    );
 
     public function __construct($repoAddr, $branch, $token, Phocker\Docker $docker = null)
     {
@@ -36,6 +41,28 @@ class ImageBuilder
         $this->runCommand('git fetch', $this->getRepoPath());
         $this->runCommand('git checkout -f ' . $this->getBranch(), $this->getRepoPath());
         $this->runCommand('git reset --hard origin/' . $this->getBranch(), $this->getRepoPath());
+
+        $this->fetchConfig();
+    }
+
+    protected function fetchConfig()
+    {
+        $config = array();
+        if (is_file($this->getRepoPath() . 'build/config.yml')) {
+            $config = file_get_contents($this->getRepoPath() . 'build/config.yml');
+            $config = Yaml::parse($config);
+        }
+        $this->config = $this->parseConfig($config);
+    }
+
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    protected function parseConfig(array $config)
+    {
+        return array_merge($this->defaultConfig, $config);
     }
 
     public function getRepoPath()

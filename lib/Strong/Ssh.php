@@ -52,4 +52,9 @@ class Ssh
     {
         return ssh2_scp_recv($this->connection, $remoteFile, $localFile);
     }
+
+    public function fileExists($path)
+    {
+        return (bool)$this->runCommand("test -e /home/rstrong/inspector/server.php && echo 1 || echo 0");
+    }
 }

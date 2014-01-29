@@ -1,6 +1,7 @@
 <?php
 
 use Strong\Deploy\ImageBuilder;
+use Strong\Deploy\ContainerBuilder;
 
 class Site extends Eloquent
 {
@@ -42,6 +43,12 @@ class Site extends Eloquent
         return $this->hasMany('Container');
     }
 
+    public function startInstance()
+    {
+        $config = $this->buildImage();
+        $this->createContainer($config);
+    }
+
     public function buildImage()
     {
         $repo = $this->repository;
@@ -53,51 +60,14 @@ class Site extends Eloquent
         $tag = $builder->build();
         $this->tag = $tag;
         $this->save();
+        return $builder->getConfig();
     }
 
-    public function startContainer()
+    public function createContainer($config)
     {
-        $docker = new \Strong\Phocker\Docker;
-        $container = $docker->createContainer($this->tag);
-        $docker->startContainer($container->Id);
-        sleep(2); //wait a second for the container to start
-
-        //clone repo into container
-        $containerInfo = $docker->inspectContainer($container->Id);
-        $containerModel = new Container();
-        $containerModel->docker_id = $container->Id;
-        $this->containers()->save($containerModel);
-        $ip = $containerInfo->NetworkSettings->IPAddress;
-        $ssh = new \Strong\Ssh(
-            array(
-                'host'      => $ip,
-                'user'      => 'root',
-                'password'  => 'pica9'
-            )
-        );
-        $this->installRepo($ssh);
-        
-        $this->addProxyEntry($ip);
-
-        return $container->Id;
-    }
-
-    protected function installRepo($ssh)
-    {
-        $git = new \Strong\SourceControl;
-        $git->setRepository('git@github.com:' . $this->repository->owner . '/' . $this->repository->name . '.git')
-            ->setCommit($this->branch)
-            ->setClonePath('/var/www')
-            ->setGithubToken($this->repository->token())
-            ->setSshConnection($ssh)
-            ->setupRepository();
-
-        $this->installComposer($ssh);
-    }
-
-    protected function installComposer($ssh)
-    {
-        //if composer.json exists, run composer install
+        $builder = new ContainerBuilder($this, $config);
+        $builder->build();
+        $this->addProxyEntry($builder->getIp());
     }
 
     public function getFullUrl()
