@@ -62,7 +62,11 @@ class ImageBuilder
 
     protected function parseConfig(array $config)
     {
-        return array_merge($this->defaultConfig, $config);
+        $config = array_merge($this->defaultConfig, $config);
+        if (!is_array($config['post_clone_cmd'])) {
+            $config['post_clone_cmd'] = array($config['post_clone_cmd']);
+        }
+        return $config;
     }
 
     public function getRepoPath()
