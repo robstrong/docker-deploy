@@ -29,13 +29,18 @@ class Docker
         }
     }
 
-    public function createContainer($image)
+    public function createContainer($image, $name = null)
     {
         $config = array(
-            "Image"         => $image,
+            "Image" => $image,
         );
 
-        $resp = $this->getClient()->post('/containers/create', json_encode($config), array('Content-Type' => 'application/json'));
+        $queryParams = array();
+        if (!empty($name)) {
+            $queryParams['name'] = $name;
+        }
+
+        $resp = $this->getClient()->post('/containers/create?' . http_build_query($queryParams), json_encode($config), array('Content-Type' => 'application/json'));
         if ($resp->getStatusCode() != 201) {
             throw new \Exception('(' . $resp->getStatusCode() . ') ' . $resp->getBody());
         }
@@ -58,11 +63,12 @@ class Docker
         }
     }
 
-    public function startContainer($id)
+    public function startContainer($id, $links = array())
     {
         $config = array(
             "PublishAllPorts"   => false,
             "Privileged"        => false,
+            "Links"             => $links,
         );
         $resp = $this->getClient()->post('/containers/' . $id . '/start', json_encode($config), array('Content-Type' => 'application/json'));
     }

@@ -11,10 +11,7 @@ class ImageBuilder
     protected $repoAddr;
     protected $branch;
     protected $token;
-    protected $defaultConfig = array(
-        'clone_path'        => '/var/www',
-        'post_clone_cmd'    => array(),
-    );
+    protected $config = array();
 
     public function __construct($repoAddr, $branch, $token, Phocker\Docker $docker = null)
     {
@@ -51,22 +48,13 @@ class ImageBuilder
         if (is_file($this->getRepoPath() . 'build/config.yml')) {
             $config = file_get_contents($this->getRepoPath() . 'build/config.yml');
             $config = Yaml::parse($config);
+            $this->config = new Config($config);
         }
-        $this->config = $this->parseConfig($config);
     }
 
     public function getConfig()
     {
         return $this->config;
-    }
-
-    protected function parseConfig(array $config)
-    {
-        $config = array_merge($this->defaultConfig, $config);
-        if (!is_array($config['post_clone_cmd'])) {
-            $config['post_clone_cmd'] = array($config['post_clone_cmd']);
-        }
-        return $config;
     }
 
     public function getRepoPath()

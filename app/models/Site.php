@@ -63,7 +63,7 @@ class Site extends Eloquent
         return $builder->getConfig();
     }
 
-    public function createContainer($config)
+    public function createContainer(\Strong\Deploy\Config $config)
     {
         $builder = new ContainerBuilder($this, $config);
         $builder->build();

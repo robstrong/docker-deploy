@@ -14,4 +14,9 @@ class Container extends Eloquent
             $docker->deleteContainer($container->docker_id);
         });
     }
+
+    public function scopeAddon($query, $name)
+    {
+        return $query->where('name', '=', $name);
+    }
 }
