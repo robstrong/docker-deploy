@@ -93,7 +93,7 @@ class ContainerBuilder
         $git->setRepository('git@github.com:' . $this->site->repository->owner . '/' . $this->site->repository->name . '.git')
             ->setCommit($this->site->branch)
             ->setClonePath($this->clonePath)
-            ->setGithubToken($this->site->repository->token())
+            ->setGithubToken($this->site->repository->token)
             ->setSshConnection($ssh)
             ->setupRepository();
     }

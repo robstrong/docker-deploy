@@ -27,7 +27,7 @@ class ImageBuilder
     {
         if (!$this->repoExists()) {
             $this->runCommand(
-                'git clone https://' . $this->getRepo()->token() . ':x-oauth-basic@' . $this->getRepo()->getAddress() .
+                'git clone https://' . $this->getRepo()->token . ':x-oauth-basic@' . $this->getRepo()->address .
                 ' ' . $this->getRepoPath()
             );
         }
@@ -57,7 +57,7 @@ class ImageBuilder
 
     public function getRepoPath()
     {
-        return $this->getCachePath() . $this->getRepo()->getAddress() . '/';
+        return $this->getCachePath() . $this->getRepo()->address . '/';
     }
 
     protected function runCommand($cmd, $cwd = null)

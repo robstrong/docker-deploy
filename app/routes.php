@@ -17,8 +17,11 @@ Route::group(array('before' => 'auth'),
         Route::get('/sites/{id}/start-instance', 'SitesController@startInstance');
         Route::resource('sites', 'SitesController');
         Route::resource('domains', 'DomainsController');
+        Route::resource('repositories', 'RepositoriesController');
+        Route::get('/repositories/{id}/install-webhooks', 'RepositoriesController@installWebhooks');
     }
 );
 
 //No auth
 Route::controller('login', 'LoginController');
+Route::controller('github', 'GithubController');
