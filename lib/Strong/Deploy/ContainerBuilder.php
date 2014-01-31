@@ -15,32 +15,35 @@ class ContainerBuilder
     public function build()
     {
         $links = $this->buildAddons();
-        $this->buildPrimaryInstance($links);
+        return $this->buildPrimaryInstance($links);
     }
 
     protected function buildPrimaryInstance($links = array())
     {
         $docker = new \Strong\Phocker\Docker;
-        $container = $docker->createContainer($this->site->tag, str_replace('.', '', $this->site->getFullUrl()));
+        $container = $docker->createContainer($this->site->tag, str_replace('.', '', $this->site->getFullUrl()) . '-' . time());
         $docker->startContainer($container->Id, $links);
         sleep(2); //wait a second for the container to start
 
         //save container info to DB
+        $containerInfo = $docker->inspectContainer($container->Id);
         $containerModel = new \Container();
         $containerModel->docker_id = $container->Id;
+        $containerModel->ip = $containerInfo->NetworkSettings->IPAddress;
         $containerModel->name = $this->site->getFullUrl();
         $this->site->containers()->save($containerModel);
 
         //clone repo into container
-        $containerInfo = $docker->inspectContainer($container->Id);
-        $this->setIp($containerInfo->NetworkSettings->IPAddress);
-        $this->setupRepo($this->getIp());
+        $this->setupRepo($containerModel->ip);
+
+        return $containerModel;
     }
 
     protected function buildAddons()
     {
         $docker = new \Strong\Phocker\Docker;
         $links = array();
+        $addons = $this->config->getAddons();
         foreach ($this->config->getAddons() as $type => $properties) {
             //don't build the instance if it already exists
             try {
@@ -68,17 +71,6 @@ class ContainerBuilder
             }
         }
         return $links;
-    }
-
-    protected function setIp($ip)
-    {
-        $this->ip = $ip;
-        return $this;
-    }
-
-    public function getIp()
-    {
-        return $this->ip;
     }
 
     public function setupRepo($ip)

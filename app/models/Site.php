@@ -52,11 +52,7 @@ class Site extends Eloquent
     public function buildImage()
     {
         $repo = $this->repository;
-        $builder = new ImageBuilder(
-            'github.com/' . $repo->owner . '/' . $repo->name . '.git',
-            $this->branch,
-            $repo->token()
-        );
+        $builder = new ImageBuilder($repo, $this->branch);
         $tag = $builder->build();
         $this->tag = $tag;
         $this->save();
@@ -66,8 +62,8 @@ class Site extends Eloquent
     public function createContainer(\Strong\Deploy\Config $config)
     {
         $builder = new ContainerBuilder($this, $config);
-        $builder->build();
-        $this->addProxyEntry($builder->getIp());
+        $container = $builder->build();
+        $this->registerContainerWithProxy($container);
     }
 
     public function getFullUrl()
@@ -81,13 +77,25 @@ class Site extends Eloquent
         return $url;
     }
 
-    public function addProxyEntry($ip)
+    protected function registerContainerWithProxy($newContainer)
     {
-        Redis::connection()->set($this->getFullUrl(), $ip);
+        //switch proxy
+        $this->addProxyEntry($newContainer->ip);
 
+        //delete old ones
+        foreach ($this->containers as $container) {
+            if ($container->id != $newContainer->id) {
+                $container->delete();
+            }
+        }
     }
 
-    public function clearProxyEntry()
+    protected function addProxyEntry($ip)
+    {
+        Redis::connection()->set($this->getFullUrl(), $ip);
+    }
+
+    protected function clearProxyEntry()
     {
         Redis::connection()->del($this->getFullUrl());
     }

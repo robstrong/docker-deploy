@@ -18,5 +18,10 @@ class Repository extends Eloquent
     {
         return $this->user->getGithubToken();
     }
+
+    public function getAddress()
+    {
+        return 'github.com/' . $this->owner . '/' . $this->name . '.git';
+    }
 }
 

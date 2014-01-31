@@ -98,7 +98,7 @@ class SitesController extends \BaseController
     public function startInstance($id)
     {
         $site = Site::findOrFail($id);
-        $site->startContainer();
+        $site->startInstance();
         Session::flash('success', 'Started Container');
         return Redirect::action('SitesController@index');
     }

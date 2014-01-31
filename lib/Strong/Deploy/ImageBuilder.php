@@ -8,16 +8,14 @@ use Symfony\Component\Yaml\Yaml;
 class ImageBuilder
 {
     protected $cachePath;
-    protected $repoAddr;
+    protected $repo;
     protected $branch;
-    protected $token;
-    protected $config = array();
+    protected $config;
 
-    public function __construct($repoAddr, $branch, $token, Phocker\Docker $docker = null)
+    public function __construct(\Repository $repo, $branch, Phocker\Docker $docker = null)
     {
-        $this->setAddress($repoAddr);
+        $this->setRepo($repo);
         $this->setBranch($branch);
-        $this->setToken($token);
         $this->setCachePath(storage_path() . '/repos');
         if (empty($docker)) {
             $docker = new \Strong\Phocker\Docker;
@@ -29,7 +27,7 @@ class ImageBuilder
     {
         if (!$this->repoExists()) {
             $this->runCommand(
-                'git clone https://' . $this->getToken() . ':x-oauth-basic@' . $this->getAddress() .
+                'git clone https://' . $this->getRepo()->token() . ':x-oauth-basic@' . $this->getRepo()->getAddress() .
                 ' ' . $this->getRepoPath()
             );
         }
@@ -48,8 +46,8 @@ class ImageBuilder
         if (is_file($this->getRepoPath() . 'build/config.yml')) {
             $config = file_get_contents($this->getRepoPath() . 'build/config.yml');
             $config = Yaml::parse($config);
-            $this->config = new Config($config);
         }
+        $this->config = new Config($config);
     }
 
     public function getConfig()
@@ -59,7 +57,7 @@ class ImageBuilder
 
     public function getRepoPath()
     {
-        return $this->getCachePath() . $this->getAddress() . '/';
+        return $this->getCachePath() . $this->getRepo()->getAddress() . '/';
     }
 
     protected function runCommand($cmd, $cwd = null)
@@ -91,15 +89,15 @@ class ImageBuilder
         $this->cachePath = $path;
     }
 
-    public function setAddress($addr)
+    public function getRepo()
     {
-        $this->repoAddr = $addr;
-        return $this;
+        return $this->repo;
     }
 
-    public function getAddress()
+    public function setRepo(\Repository $repo)
     {
-        return $this->repoAddr;
+        $this->repo = $repo;
+        return $this;
     }
 
     public function setBranch($branch)
@@ -110,17 +108,6 @@ class ImageBuilder
     public function getBranch()
     {
         return $this->branch;
-    }
-
-    public function setToken($token)
-    {
-        $this->token = $token;
-        return $this;
-    }
-
-    public function getToken()
-    {
-        return $this->token;
     }
 
     public function getDocker()
@@ -141,9 +128,13 @@ class ImageBuilder
         //package the dockerfile into a tar
         $tar = $this->runCommand('tar c .', $this->getRepoPath() . 'build/');
         $nameHash = md5($tar);
-        if (!$this->getDocker()->imageExists($nameHash)) {
-            $this->getDocker()->build($tar, $nameHash);
+        $imageName = $this->getRepo()->owner . '/' . $this->getRepo()->name . ':' . $nameHash;
+        if (!$this->getDocker()->imageExists($imageName)) {
+            $this->getDocker()->build(
+                $tar, 
+                $imageName
+            );
         }
-        return $nameHash;
+        return $imageName;
     }
 }

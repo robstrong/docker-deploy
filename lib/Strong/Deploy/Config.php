@@ -18,11 +18,9 @@ class Config
         'addons'                => array(),
     );
 
-    public function __construct(array $configData = null)
+    public function __construct(array $configData)
     {
-        if ($configData) {
-            $this->setConfig($configData);
-        }
+        $this->setConfig($configData);
     }
 
     public function getConfig()
@@ -58,6 +56,9 @@ class Config
 
     public function getAddons()
     {
+        if (!isset($this->config['addons'])) {
+            return array();
+        }
         return $this->config['addons'];
     }
 
