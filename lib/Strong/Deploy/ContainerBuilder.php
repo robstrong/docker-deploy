@@ -56,7 +56,7 @@ class ContainerBuilder
                         $imageName = "dockerfile/redis";
                         break;
                     case "postgres":
-                        $imageName = "postgres";
+                        $imageName = "zumbrunnen/postgresql";
                         break;
                 }
                 $container = $docker->createContainer($imageName, $properties['name']);

@@ -4,6 +4,15 @@ class Repository extends Eloquent
 {
     protected $table = 'repositories';
 
+    public static function boot()
+    {
+        parent::boot();
+
+        Repository::created(function($repo) {
+            $repo->installGithubPushHook();
+        });
+    }
+
     public function sites()
     {
         return $this->hasMany('Site');
