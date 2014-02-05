@@ -42,7 +42,7 @@ class LoginController extends \BaseController
         $user = $client->api('current_user')->show();
 
         if (!$this->validUser($client)) {
-            Session::flash('error', 'Access Denied: You must be a member of the Pica9 Github Organization');
+            Session::flash('error', 'Access Denied');
             return Redirect::to('login');
         }
 
@@ -54,14 +54,8 @@ class LoginController extends \BaseController
 
     protected function validUser($client)
     {
-        $orgs = $client->api('current_user')->organizations();
-        foreach ($orgs as $org) {
-            if ($org['login'] == 'Pica9') {
-                return true;
-            }
-        }
         $user = $client->api('current_user')->show();
-        if ($user['login'] == 'robstrong') {
+        if (in_array($user['login'], array('robstrong', 'rstrong-pica9'))) {
             return true;
         }
         return false;

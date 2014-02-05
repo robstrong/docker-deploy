@@ -2,7 +2,6 @@
 set -e
 
 CACHE_PATH="`dirname \"$0\"`/../../cache"
-echo $CACHE_PATH
 if [ ! -f "$CACHE_PATH/httpd-2.4.7.tar.gz" ]; then
     wget http://apache.tradebit.com/pub/httpd/httpd-2.4.7.tar.gz -O $CACHE_PATH/httpd-2.4.7.tar.gz
 fi

@@ -12,8 +12,15 @@ class Config
         'clone_dir'             => '/var/www',
         'post_clone_cmd'        => array(),
         'os'                    => 'centos-6.4',
-        'php'                   => '5.4',
-        'webserver'             => 'apache',
+        'php'                   => array(
+            'version'           => '5.4',
+            'extensions'        => array(),
+        ),
+        'webserver'             => array(
+            'apache'    => array(
+                'public_dir'    => 'public'
+            )
+        ),
         'misc_bin'              => array(),
         'addons'                => array(),
     );
@@ -36,7 +43,7 @@ class Config
 
     public function parseConfig(array $config = null)
     {
-        $config = array_merge($this->defaultConfig, $config);
+        $config = array_merge_recursive($this->defaultConfig, $config);
         $this->validateAddons($config['addons']);
         return $config;
     }
@@ -52,6 +59,14 @@ class Config
             $value = $value[$key];
         }
         return $value;
+    }
+
+    public function getWebserver()
+    {
+        if (!isset($this->config['webserver'])) {
+            return "apache";
+        }
+        return key($this->config['webserver']);
     }
 
     public function getAddons()

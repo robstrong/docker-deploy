@@ -4,16 +4,20 @@
 The config file must return a PHP array containing the configuration. An example file:
 
 ```yaml
-clone_dir: "/var/www",
+clone_dir: "/var/www"
 post_clone_cmd: 
     - "chmod -R 777 /var/www"
-php: 5.5
+os: centos-6.4
+php:
+    version: 5.5
+    extensions:
+        - yaml
 webserver:
     nginx:
         nginx_config: "config/nginx.conf"
+        public_dir: "web"
 misc_bin:
     - sass
-    - php-yaml
 addons:
     redis:
         name: zunction_cache
@@ -42,12 +46,14 @@ The config options are:
 | Config Key     | Description | Default Value |
 | -------------- | ----------- | ------------- |
 | httpd_config   | Should be the path to the custom httpd.conf file, located in your repo | [default httpd.conf](docker/scripts/apache/httpd.conf) |
+| public_dir     | The path to the public dir, relative to the clone_dir | public |
 
 #### Nginx
 
 | Config Key     | Description | Default Value |
 | -------------- | ----------- | ------------- |
 | nginx_config   | Should be the path to the custom nginx.conf file, located in your repo | [default nginx.conf](docker/scripts/nginx/nginx.conf) |
+| public_dir     | The path to the public dir, relative to the clone_dir | public |
 
 ### Addons
 Addons exist separately from the primary instances and they can be shared between instances. The name of the instance must be unique and when starting an instance that
