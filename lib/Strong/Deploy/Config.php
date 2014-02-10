@@ -25,7 +25,7 @@ class Config
         'addons'                => array(),
     );
 
-    public function __construct(array $configData)
+    public function __construct(array $configData = array())
     {
         $this->setConfig($configData);
     }

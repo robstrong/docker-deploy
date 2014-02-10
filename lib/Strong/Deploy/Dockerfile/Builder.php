@@ -7,11 +7,12 @@ namespace Strong\Deploy\Dockerfile;
  * required to build the Docker image
  */
 
-class DockerfileBuilder
+class Builder
 {
     protected $config;
     protected $defaultScriptPath = '/home/rstrong/deploy/docker/';
     protected $dockerRootPath = '/root/docker/';
+    protected $cmds = array();
 
     //relative to dockerRootPath
     protected $containerScriptPath = 'scripts/';
@@ -22,15 +23,72 @@ class DockerfileBuilder
         $this->config = $config;
     }
 
-    public function setOutputPath($dir)
+    public function __destruct()
     {
-        $this->outputPath = $dir;
-        return $this;
+        $this->deleteOutputDir();
+    }
+
+    public function getConfig()
+    {
+        return $this->config;
     }
 
     public function getOutputPath()
     {
+        if (!isset($this->outputPath)) {
+            $this->outputPath = $this->getTempOutputPath();
+        }
         return $this->outputPath;
+    }
+
+    protected function getTempOutputPath()
+    {
+        $tmpPath = sys_get_temp_dir();
+
+        do {
+            $dir = sys_get_temp_dir() . '/' . $this->getRandomName() . '/';
+        } while(is_dir($dir));
+
+        mkdir($dir);
+        return $dir;
+    }
+
+    protected function getRandomName()
+    {
+        return 'DOCKERFILEBUILDER' . rand(1000, 10000);
+    }
+
+    public function deleteOutputDir()
+    {
+        die('delete dir: ' . $this->getOutputPath());
+        if (is_dir($this->getOutputPath())) {
+            $this->deleteDir($this->getOutputPath());
+        }
+    }
+
+    protected function deleteDir($path)
+    {
+        if(!file_exists($path)) {
+            throw new RecursiveDirectoryException('Directory doesn\'t exist.');
+        }
+
+        $directoryIterator = new DirectoryIterator($path);
+
+        foreach($directoryIterator as $fileInfo) {
+            $filePath = $fileInfo->getPathname();
+            if(!$fileInfo->isDot()) {
+                if($fileInfo->isFile()) {
+                    unlink($filePath);
+                } elseif($fileInfo->isDir()) {
+                    if($this->emptyDirectory($filePath)) {
+                        rmdir($filePath);
+                    } else {
+                        $this->deleteDir($filePath);
+                    }
+                }
+            }
+        }
+        rmdir($path);
     }
 
     public function build()
@@ -52,8 +110,7 @@ class DockerfileBuilder
             if (!in_array($file, array('.', '..'))) {
                 if (is_dir($src . '/' . $file)) { 
                     $this->copyDir($src . '/' . $file, $dest . '/' . $file); 
-                } 
-                else { 
+                } else { 
                     copy($src . '/' . $file, $dest . '/' . $file); 
                 } 
             } 
@@ -63,17 +120,26 @@ class DockerfileBuilder
 
     protected function getDockerfile()
     {
-        $dockerStr = '';
-        $dockerStr .= $this->getAddScripts();
-        $dockerStr .= $this->getBaseImage();
-        $dockerStr .= $this->getOsScripts();
-        $dockerStr .= $this->getWebserverScripts();
-        $dockerStr .= $this->getPhpScripts();
-        $dockerStr .= $this->getBinScripts();
-        return $dockerStr;
+        $this->addBaseImage()
+            ->addAddScripts()
+            ->addOsScripts()
+            ->addWebserverScripts()
+            ->addPhpScripts()
+            ->addBinScripts();
+        return implode("\n", $this->cmds);
     }
 
-    protected function getScriptPath($path)
+    protected function addDockerCmd($cmd)
+    {
+        if (is_array($cmd)) {
+            $this->cmds = array_merge($this->cmds, $cmd);
+        } else {
+            $this->cmds[] = $cmd;
+        }
+        return $this;
+    }
+
+    protected function getScriptPath()
     {
         return $this->containerScriptPath;
     }
@@ -95,12 +161,13 @@ class DockerfileBuilder
         return $this;
     }
 
-    protected function getAddScripts()
+    protected function addAddScripts()
     {
-        return "ADD files " . $this->getScriptPath();
+        $this->addDockerCmd("ADD files " . $this->getScriptPath());
+        return $this;
     }
 
-    protected function getBaseImage()
+    protected function addBaseImage()
     {
         switch ($this->getConfig()->get('os')) {
             case "centos-6.4":
@@ -108,53 +175,56 @@ class DockerfileBuilder
                 break;
         }
 
-        return "FROM " . $image;
+        $this->addDockerCmd("FROM " . $image);
+        return $this;
     }
 
-    protected function getOsScripts()
+    protected function addOsScripts()
     {
         $cmds = array();
         switch ($this->getConfig()->get('os')) {
             case "centos-6.4":
-                $cmds[] = "RUN " . $this->getScriptPath() . "centos/repositories/epel.sh\n";
-                $cmds[] = "RUN " . $this->getScriptPath() . "centos/common/os.sh\n";
+                $cmds[] = "RUN " . $this->getScriptPath() . "centos/repositories/epel.sh";
+                $cmds[] = "RUN " . $this->getScriptPath() . "centos/common/os.sh";
                 break;
         }
 
-        return implode("\n", $cmds);
+        $this->addDockerCmd($cmds);
+        return $this;
     }
 
-    protected function getWebserverScripts()
+    protected function addWebserverScripts()
     {
         $cmds = array();
         switch ($this->getConfig()->getWebserver()) {
             case "apache":
-                $cmds[] = "RUN " . $this->getScriptPath() . "apache/install.sh\n";
+                $cmds[] = "RUN " . $this->getScriptPath() . "apache/install.sh";
                 break;
         }
 
-        return implode("\n", $cmds);
+        $this->addDockerCmd($cmds);
+        return $this;
     }
 
-    protected function getPhpScripts()
+    protected function addPhpScripts()
     {
         $cmds = array();
         switch ($this->getConfig()->get('os')) {
             case "centos-6.4":
                 switch ($this->getConfig()->get('php.version')) {
                     case "5.4":
-                        $cmds[] = "RUN " . $this->getScriptPath() . "centos/repositories/remi.sh\n";
-                        $cmds[] = "RUN " . $this->getScriptPath() . "centos/php/php-5.4.sh\n";
+                        $cmds[] = "RUN " . $this->getScriptPath() . "centos/repositories/remi.sh";
+                        $cmds[] = "RUN " . $this->getScriptPath() . "centos/php/php-5.4.sh";
                         break;
                 }
         }
 
-        $cmds .= "\n" . $this->getPhpExtensions();
-
-        return implode("\n", $cmds);
+        $this->addDockerCmd($cmds);
+        $this->addPhpExtensions();
+        return $this;
     }
 
-    protected function getPhpExtensions()
+    protected function addPhpExtensions()
     {
         $cmds = array();
         switch ($this->getConfig()->get('os')) {
@@ -166,10 +236,11 @@ class DockerfileBuilder
                 }
         }
 
-        return implode("\n", $cmds);
+        $this->addDockerCmd($cmds);
+        return $this;
     }
 
-    protected function getBinScripts()
+    protected function addBinScripts()
     {
         $cmds = array();
         switch ($this->getConfig()->get('os')) {
@@ -181,6 +252,7 @@ class DockerfileBuilder
                 }
         }
 
-        return implode("\n", $cmds);
+        $this->addDockerCmd($cmds);
+        return $this;
     }
 }
