@@ -43,6 +43,11 @@ class Site extends Eloquent
         return $this->hasMany('Container');
     }
 
+    public function aliases()
+    {
+        return $this->hasMany('Alias');
+    }
+
     public function startInstance()
     {
         $config = $this->buildImage();
@@ -81,6 +86,11 @@ class Site extends Eloquent
     {
         //switch proxy
         $this->addProxyEntry($newContainer->ip);
+
+        //set alias entries
+        foreach ($this->aliases as $alias) {
+            $alias->addProxyEntry($newContainer->ip);
+        }
 
         //delete old ones
         foreach ($this->containers as $container) {
